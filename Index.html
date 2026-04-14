@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pembina Pipeline | Board Strategic Decision Engine</title>
+<style>
+:root {
+  --pembina-dark: #1a3a4a;
+  --pembina-teal: #00697a;
+  --pembina-mid: #0090a1;
+  --pembina-light: #e6f3f5;
+  --pembina-accent: #c96b2c;
+  --pembina-orange: #e8862a;
+  --pembina-gold: #d4a84b;
+  --bg: #f7f9fa;
+  --card: #ffffff;
+  --text: #1a2a34;
+  --text-light: #556670;
+  --border: #dce3e8;
+  --green: #1b8a5a;
+  --red: #c0392b;
+  --amber: #d4890b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px}
+
+.nav{position:fixed;top:0;left:0;right:0;background:var(--pembina-dark);z-index:100;border-bottom:2px solid var(--pembina-accent)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{color:var(--pembina-orange);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.nav-sub{color:rgba(255,255,255,.5);font-size:12px;margin-left:12px;font-weight:400}
+.nav-right{display:flex;gap:16px;align-items:center}
+.nav-right span{color:rgba(255,255,255,.6);font-size:12px}
+.nav-right .live{color:var(--green);font-weight:700;font-size:11px;padding:3px 10px;border:1px solid var(--green);border-radius:4px}
+
+.hero{background:linear-gradient(135deg,var(--pembina-dark) 0%,#0d4a5a 50%,var(--pembina-teal) 100%);padding:130px 32px 70px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;right:-15%;width:500px;height:500px;background:radial-gradient(circle,rgba(201,107,44,.08),transparent 70%);border-radius:50%}
+.hero-inner{max-width:900px;margin:0 auto;position:relative}
+.hero-badge{display:inline-block;border:1px solid rgba(201,107,44,.5);color:var(--pembina-orange);font-size:11px;font-weight:700;letter-spacing:2px;padding:5px 14px;border-radius:4px;margin-bottom:28px;text-transform:uppercase}
+.hero h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(32px,4.5vw,48px);font-weight:700;line-height:1.15;margin-bottom:20px}
+.hero p{font-size:16px;color:rgba(255,255,255,.7);line-height:1.7;max-width:700px;margin-bottom:40px}
+.hero-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;border-top:1px solid rgba(255,255,255,.12);padding-top:28px}
+.hero-kpi label{display:block;font-size:10px;font-weight:600;color:var(--pembina-orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.hero-kpi .val{font-size:22px;font-weight:700;color:#fff}
+.hero-kpi .sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
+
+.section{max-width:1100px;margin:0 auto;padding:56px 32px}
+.section-label{font-size:11px;font-weight:700;color:var(--pembina-teal);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.section h2{font-family:Georgia,serif;font-size:28px;color:var(--pembina-dark);margin-bottom:16px;line-height:1.25}
+.section p{margin-bottom:14px;color:var(--text-light)}
+
+/* Business driver bar */
+.driver-bar{display:flex;gap:2px;margin:20px 0 28px}
+.driver-pill{flex:1;text-align:center;padding:10px 8px;border-radius:8px;font-size:11px;font-weight:600;color:var(--pembina-dark);background:var(--pembina-light);border:1px solid var(--border);line-height:1.35}
+.driver-pill .dp-val{font-size:16px;font-weight:700;color:var(--pembina-teal);margin-bottom:2px}
+.driver-pill .dp-label{color:var(--text-light)}
+
+/* Strategic choice cards */
+.choice-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+.choice-card{background:var(--card);border:1px solid var(--border);border-top:4px solid var(--pembina-teal);border-radius:0 0 10px 10px;padding:18px 16px;cursor:pointer;transition:all .25s;text-align:center;position:relative}
+.choice-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08);border-top-color:var(--pembina-accent)}
+.choice-card .cc-num{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--pembina-accent);text-transform:uppercase;margin-bottom:6px}
+.choice-card h3{font-size:14px;color:var(--pembina-dark);margin-bottom:6px;line-height:1.3}
+.choice-card .cc-q{font-size:11px;color:var(--text-light);line-height:1.45}
+.choice-card .cc-driver{font-size:10px;font-weight:600;color:var(--pembina-teal);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+
+/* Scenario Cards */
+.scenarios{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:28px 0}
+.scenario-card{border:1px solid var(--border);border-radius:10px;padding:24px 20px;background:var(--card);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.scenario-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.scenario-card.active{border-color:var(--pembina-teal);box-shadow:0 0 0 2px var(--pembina-teal)}
+.scenario-card.s1{border-top:4px solid var(--green)}
+.scenario-card.s2{border-top:4px solid var(--pembina-teal)}
+.scenario-card.s3{border-top:4px solid var(--amber)}
+.scenario-card.s4{border-top:4px solid var(--red)}
+.scenario-card .tag{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:6px}
+.scenario-card h3{font-size:17px;color:var(--pembina-dark);margin:0 0 8px;line-height:1.3}
+.scenario-card .desc{font-size:13px;color:var(--text-light);line-height:1.55;margin-bottom:14px}
+.scenario-card .prob{font-size:13px;font-weight:700}
+.scenario-card .prob.g{color:var(--green)}.scenario-card .prob.t{color:var(--pembina-teal)}.scenario-card .prob.a{color:var(--amber)}.scenario-card .prob.r{color:var(--red)}
+.scenario-card .impact-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;display:inline-block;margin-top:4px}
+.impact-positive{background:#e8f5e9;color:#1b8a5a}
+.impact-mixed{background:#fff8e1;color:#b8860b}
+.impact-negative{background:#ffebee;color:#c0392b}
+
+/* Popups / Modals */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:200;justify-content:center;align-items:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--card);border-radius:12px;max-width:620px;width:92%;max-height:80vh;overflow-y:auto;padding:32px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-box .modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-light)}
+.modal-box h3{font-size:20px;color:var(--pembina-dark);margin-bottom:4px;font-family:Georgia,serif}
+.modal-box .modal-q{font-size:14px;color:var(--pembina-teal);font-weight:600;margin-bottom:18px;font-style:italic}
+.modal-box .modal-driver{font-size:12px;color:var(--pembina-accent);font-weight:600;margin-bottom:16px}
+.option-card{border:1px solid var(--border);border-left:4px solid var(--pembina-teal);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:10px}
+.option-card h4{font-size:14px;color:var(--pembina-dark);margin-bottom:4px}
+.option-card p{font-size:12px;color:var(--text-light);line-height:1.5;margin:0}
+.signal-item{padding:10px 14px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.signal-item .si-name{font-size:13px;font-weight:600;color:var(--pembina-dark)}
+.signal-item .si-val{font-size:13px;font-weight:700}
+
+/* Scenario Builder */
+.builder{background:var(--card);border:2px solid var(--pembina-dark);border-radius:12px;overflow:hidden;margin:28px 0}
+.builder-step{padding:28px 32px;border-bottom:1px solid var(--border)}
+.builder-step:last-child{border-bottom:none}
+.builder-step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--pembina-dark);color:#fff;font-size:12px;font-weight:700}
+.builder-step-label{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--pembina-accent);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.builder-signals{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.signal-ctrl label{display:block;font-size:13px;font-weight:600;color:var(--pembina-dark);margin-bottom:6px}
+.signal-ctrl .sig-row{display:flex;align-items:center;gap:10px}
+.signal-ctrl .sig-range{flex:1;accent-color:var(--pembina-teal);height:6px}
+.signal-ctrl .sig-val{font-size:12px;font-weight:700;color:var(--pembina-teal);min-width:155px;text-align:right}
+.signal-ctrl .sig-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-light);margin-top:2px}
+.gauge-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.gauge-label{font-size:13px;font-weight:600;min-width:180px;color:var(--pembina-dark)}
+.gauge-track{flex:1;height:30px;background:#eef1f4;border-radius:6px;overflow:hidden}
+.gauge-fill{height:100%;border-radius:6px;transition:width .4s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;font-size:12px;font-weight:700;color:#fff;min-width:42px}
+.gauge-fill.gf-fortress{background:var(--green)}
+.gauge-fill.gf-steady{background:var(--pembina-teal)}
+.gauge-fill.gf-whipsaw{background:var(--amber)}
+.gauge-fill.gf-transition{background:var(--red)}
+.builder-fin{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.builder-fin-item{text-align:center;padding:16px;background:var(--pembina-light);border-radius:8px}
+.builder-fin-item .bf-val{font-size:24px;font-weight:700;color:var(--pembina-teal)}
+.builder-fin-item .bf-label{font-size:11px;color:var(--text-light);margin-top:2px}
+.builder-fin-item .bf-delta{font-size:11px;font-weight:600;margin-top:2px}
+.builder-decs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.builder-dec{border-left:4px solid var(--pembina-teal);padding:10px 14px;background:var(--pembina-light);border-radius:0 6px 6px 0;transition:all .2s}
+.builder-dec .bd-num{font-size:11px;font-weight:700;color:var(--pembina-accent);letter-spacing:1px}
+.builder-dec .bd-rec{font-size:13px;font-weight:700;color:var(--pembina-teal);margin-top:3px}
+.builder-dec .bd-why{font-size:11px;color:var(--text-light);margin-top:3px;line-height:1.4}
+.builder-dec.confident{border-left-color:var(--green)}
+.builder-dec.somewhat-confident{border-left-color:var(--amber)}
+.builder-dec.uncertain{border-left-color:var(--red)}
+.conf-badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;text-transform:uppercase;vertical-align:middle;margin-left:4px}
+.conf-badge.cb-confident{background:#e8f5e9;color:var(--green);border:1px solid var(--green)}
+.conf-badge.cb-somewhat-confident{background:#fff8e1;color:#b8860b;border:1px solid var(--amber)}
+.conf-badge.cb-uncertain{background:#ffebee;color:var(--red);border:1px solid var(--red)}
+.builder-flow{display:flex;align-items:center;justify-content:center;gap:20px;padding:14px 32px;background:var(--pembina-dark);font-size:12px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:1px}
+.builder-flow .flow-arrow{color:var(--pembina-orange);font-size:16px}
+.builder-flow .flow-active{color:#fff}
+
+.wyhtb-box{margin-top:8px;padding:10px 14px;background:linear-gradient(135deg,#fdf6ee,#fef9f3);border-left:3px solid var(--pembina-gold);border-radius:0 6px 6px 0;font-size:12px;color:var(--text);line-height:1.55;transition:all .3s ease}
+.wyhtb-box .wyhtb-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--pembina-gold);margin-bottom:4px}
+
+
+.blend-summary{display:flex;gap:2px;height:36px;border-radius:8px;overflow:hidden;margin:16px 0}
+.blend-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;transition:width .4s ease;min-width:0;overflow:hidden}
+.blend-seg.bs-fortress{background:var(--green)}
+.blend-seg.bs-steady{background:var(--pembina-teal)}
+.blend-seg.bs-whipsaw{background:var(--amber)}
+.blend-seg.bs-transition{background:var(--red)}
+
+.source-bar{background:var(--pembina-light);border-left:4px solid var(--pembina-teal);padding:16px 20px;border-radius:0 8px 8px 0;margin:20px 0;font-size:13px;color:var(--pembina-dark);line-height:1.6}
+.source-bar strong{color:var(--pembina-teal)}
+.callout{background:var(--pembina-light);border-left:4px solid var(--pembina-teal);padding:18px 22px;border-radius:0 8px 8px 0;margin:20px 0;font-weight:500;color:var(--pembina-dark);line-height:1.65;font-size:14px}
+.polymarket-badge{display:inline-flex;align-items:center;gap:6px;background:#1a1a2e;color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:4px;margin-left:8px}
+.polymarket-badge::before{content:'';width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block}
+
+.footer{background:var(--pembina-dark);color:rgba(255,255,255,.4);padding:28px;text-align:center;font-size:12px}
+.footer strong{color:var(--pembina-orange)}
+
+hr.divider{border:none;border-top:1px solid var(--border);margin:40px 0}
+
+.btn-reset{display:inline-flex;align-items:center;gap:6px;background:var(--pembina-dark);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:all .2s}
+.btn-reset:hover{background:var(--pembina-accent)}
+
+@media(max-width:900px){
+  .scenarios{grid-template-columns:1fr 1fr}
+  .hero-kpis{grid-template-columns:repeat(3,1fr)}
+  .builder-signals{grid-template-columns:1fr}
+  .builder-fin{grid-template-columns:repeat(2,1fr)}
+  .builder-decs{grid-template-columns:1fr}
+  .choice-grid{grid-template-columns:repeat(2,1fr)}
+  .driver-bar{flex-wrap:wrap}
+  .driver-pill{min-width:45%}
+}
+@media(max-width:600px){
+  .scenarios{grid-template-columns:1fr}
+  .hero-kpis{grid-template-columns:repeat(2,1fr)}
+  .choice-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div><span class="nav-brand">Pembina Pipeline</span><span class="nav-sub">Board Decision-Support Tool</span></div>
+    <div class="nav-right">
+      <span>PPL.TO: C$63.17</span>
+      <span>Market Cap: C$25.8B</span>
+      <span class="live">LIVE</span>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Strategic Decision Engine</div>
+    <h1>How might the board help guide management decision-making?</h1>
+    <p>Five strategic choices face Pembina over the next 3 to 5 years. Each is stress-tested against four divergent futures, grounded in the business drivers that actually move Pembina's economics: pipeline tolling volumes, gas processing throughput, marketing margins, Cedar LNG cash flows, and the contracted-vs-commodity revenue split. Every slider, scenario, and signal exists to answer one question: <strong>given what we believe today, what should we commit to?</strong></p>
+    <div class="hero-kpis">
+      <div class="hero-kpi"><label>2025 Adj. EBITDA</label><div class="val">$4.29B</div><div class="sub">Within guidance range</div></div>
+      <div class="hero-kpi"><label>Record Volumes</label><div class="val">3.7M boe/d</div><div class="sub">Pipelines + Facilities</div></div>
+      <div class="hero-kpi"><label>2026E EBITDA</label><div class="val">$4.1-4.4B</div><div class="sub">~5% fee-based CAGR</div></div>
+      <div class="hero-kpi"><label>Dividend Yield</label><div class="val">4.6%</div><div class="sub">$2.07/share annual</div></div>
+      <div class="hero-kpi"><label>Cedar LNG</label><div class="val">Late 2028</div><div class="sub">30% vessel complete</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 1: FIVE STRATEGIC CHOICES ═══ -->
+<div class="section">
+  <div class="section-label">Strategic Choices</div>
+  <h2>Five choices the board must resolve in the next 3 to 5 years</h2>
+  <p>Click any choice to see the options available and how each connects to Pembina's business drivers</p>
+
+  <div class="choice-grid" id="choice-grid">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══ SECTION 2: FOUR DIVERGENT FUTURES ═══ -->
+<div class="section">
+  <div class="section-label">Four Divergent Futures</div>
+  <h2>The scenarios that change which options are right to pursue</h2>
+  <p>These are not forecasts. They are stress tests for the five strategic choices. Each scenario is the world in which a different strategic path becomes optimal over the 2029 to 2031 terminal horizon. Baseline probabilities are derived from Polymarket prediction markets, East Daley production forecasts, and Norton Rose Fulbright LNG outlooks. Click any scenario to see the signals that indicate it is coming to fruition</p>
+
+  <div class="scenarios">
+    <div class="scenario-card s1" onclick="openScenarioModal(0)">
+      <div class="tag">Scenario 1</div>
+      <h3>Fortress Canada</h3>
+      <div class="desc">LNG buildout accelerates. WCSB production grows 5-7%/yr. Pipeline egress maxes out. Cedar LNG, LNG Canada Phase 2, and new expansions all proceed. Energy sovereignty dominates policy</div>
+      <div class="prob g">Baseline: ~30%</div>
+      <span class="impact-tag impact-positive">STRONG POSITIVE</span>
+    </div>
+    <div class="scenario-card s2" onclick="openScenarioModal(1)">
+      <div class="tag">Scenario 2 | Base Case</div>
+      <h3>Steady Compounder</h3>
+      <div class="desc">Moderate production growth (3-4%/yr). Cedar LNG on time. Carbon policy stable. Fee-based EBITDA compounds at ~5%/yr. Disciplined capital allocation</div>
+      <div class="prob t">Baseline: ~35%</div>
+      <span class="impact-tag impact-positive">POSITIVE</span>
+    </div>
+    <div class="scenario-card s3" onclick="openScenarioModal(2)">
+      <div class="tag">Scenario 3</div>
+      <h3>Commodity Whipsaw</h3>
+      <div class="desc">Geopolitical crisis sends WTI to $120+. Short-term revenue surge but demand destruction follows. Marketing margins swing wildly. Producer capex discipline tested</div>
+      <div class="prob a">Baseline: ~20%</div>
+      <span class="impact-tag impact-mixed">MIXED</span>
+    </div>
+    <div class="scenario-card s4" onclick="openScenarioModal(3)">
+      <div class="tag">Scenario 4</div>
+      <h3>Accelerated Transition</h3>
+      <div class="desc">Aggressive climate policy globally. Carbon price rises to $200+/tonne. WCSB production peaks. Pipeline utilization drops below 80%. Pembina must pivot to H2, CCUS, or diversify</div>
+      <div class="prob r">Baseline: ~15%</div>
+      <span class="impact-tag impact-negative">NEGATIVE</span>
+    </div>
+  </div>
+
+  <div class="source-bar">
+    <strong>Probability sources:</strong> Polymarket oil price markets ($200M+ aggregate volume); WTI $120 at 65% odds (March 31, 2026); Canadian energy policy from Carbon Direct, Torys LLP; LNG timelines from Norton Rose Fulbright; Production from East Daley; Pembina Q4 2025 earnings
+    <span class="polymarket-badge">Polymarket-Informed</span>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══ SECTION 3: WHAT-IF ENGINE ═══ -->
+<div class="section" id="builder-section">
+  <div class="section-label">The What-If Engine | Calibrated to Today's Market Reality</div>
+  <h2>Build your view of the world. See what choices follow.</h2>
+  <p>Each slider starts at today's consensus baseline. As you move a slider, a "What You Have to Believe" rationale appears, forcing you to reconcile your assumptions with market reality. The tool maps your expectations to a probabilistic scenario blend, projects the 2029 to 2031 financial impact on Pembina's business drivers, and surfaces the strategic choices that follow</p>
+
+  <div class="source-bar" style="margin-bottom:8px">
+    <strong>Baseline Calibration:</strong> WTI at $75/bbl (current strip) &nbsp;|&nbsp; LNG FID at 50% (Norton Rose Fulbright consensus) &nbsp;|&nbsp; Carbon at $80/t (current OBPS) &nbsp;|&nbsp; Rig count at 180 (East Daley mid-case) &nbsp;|&nbsp; Utilization at 92% (Pembina Q4 2025) &nbsp;|&nbsp; Geopolitical risk at 30% (Polymarket-derived)
+    <span class="polymarket-badge">Polymarket-Informed</span>
+  </div>
+
+  <div class="builder">
+    <div class="builder-flow">
+      <span class="flow-active">SIGNALS + BELIEFS</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-active">SCENARIO BLEND</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-active">STRATEGIC CHOICES</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-active">BUSINESS DRIVER IMPACT</span>
+    </div>
+
+    <div class="builder-step">
+      <div class="builder-step-label">
+        <span class="builder-step-num">1</span> What signals do you expect to see? (What You Have to Believe)
+        <button class="btn-reset" onclick="resetSliders()" style="margin-left:auto">&#8634; Reset to Baseline</button>
+      </div>
+      <div class="builder-signals" id="builder-signals"><!-- rendered by JS --></div>
+    </div>
+
+    <div class="builder-step">
+      <div class="builder-step-label"><span class="builder-step-num">2</span> Scenario Blend: the probability-weighted future from your signals</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Your assumptions produce a weighted blend across all four scenarios, not a single prediction. The bars show the probability each scenario contributes to your outlook</p>
+      <div id="blend-bar-container"><!-- rendered by JS --></div>
+      <div id="scenario-gauge" style="margin-top:14px"><!-- rendered by JS --></div>
+      <div id="gauge-insight" style="margin-top:14px;font-size:13px;color:var(--text-light);line-height:1.6;font-style:italic"></div>
+    </div>
+
+    <div class="builder-step">
+      <div class="builder-step-label"><span class="builder-step-num">3</span> The strategic choices this drives today</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px">Based on your signals, here is the recommended option for each of the five strategic choices. <span style="color:var(--green);font-weight:600">Confident</span> = recommendation holds across the two most likely scenarios. <span style="color:var(--amber);font-weight:600">Somewhat Confident</span> = recommendation changes depending on which scenario dominates. <span style="color:var(--red);font-weight:600">Uncertain</span> = top two scenarios produce very different paths</p>
+      <div class="builder-decs" id="builder-decs"><!-- rendered by JS --></div>
+    </div>
+
+    <div class="builder-step">
+      <div class="builder-step-label"><span class="builder-step-num">4</span> Impact on Pembina's Business Drivers (Terminal State: 2029 to 2031)</div>
+      <div class="builder-fin" id="builder-fin"><!-- rendered by JS --></div>
+      <div id="driver-impact" style="margin-top:16px"><!-- rendered by JS --></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="footer">
+  <strong>Pembina Pipeline Corporation</strong> | Board Decision-Support Tool | Confidential<br>
+  Data as of April 2, 2026 | Sources: Pembina 2025 Annual Report, Q4 2025 Earnings, Polymarket, Norton Rose Fulbright, East Daley, CER, analyst consensus<br>
+  3 to 5 year strategic horizon (2029 to 2031). This tool is a decision instrument, not a discussion paper
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-overlay" id="choice-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('choice-modal')">&times;</button>
+    <div id="choice-modal-content"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="scenario-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('scenario-modal')">&times;</button>
+    <div id="scenario-modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══ MODAL HELPERS ═══
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ═══ FIVE STRATEGIC CHOICES ═══
+const choices = [
+  {
+    num: "Choice 1", title: "Cedar LNG Expansion",
+    question: "Should Pembina commit additional capital beyond the current 1.5 mtpa to expand Cedar LNG capacity?",
+    driver: "Drives: Cedar LNG revenue stream, gas processing volumes, leverage capacity",
+    options: [
+      {name: "Hold at 1.5 mtpa", desc: "Preserve optionality until LNG Canada Phase 2 FID signals market commitment. Limits Cedar LNG revenue to $350-450M/yr but protects balance sheet at 3.5x leverage"},
+      {name: "Expand to 3.0 mtpa", desc: "Double capacity to capture full LNG buildout. Adds $200-300M/yr Cedar revenue but requires $2-3B capital commitment and pushes leverage toward 4.25x during construction"},
+      {name: "Acquire additional LNG equity", desc: "Take equity stakes in third-party LNG projects. Diversifies LNG exposure beyond Cedar but concentrates capital in a single commodity value chain"},
+    ]
+  },
+  {
+    num: "Choice 2", title: "Capital Allocation",
+    question: "How should Pembina split ~$2B annual FCF between growth capex, shareholder returns (dividends and buybacks), and balance sheet strength?",
+    driver: "Drives: Fee-based revenue growth rate, dividend yield, leverage positioning",
+    options: [
+      {name: "70% growth / 30% returns", desc: "Maximize pipeline expansion and facility buildout. Accelerates fee-based revenue growth to 8-12%/yr but limits dividend growth to 2-3% and keeps leverage elevated at 4.0-4.25x"},
+      {name: "50/50 balanced", desc: "Split evenly between growth capex and shareholder returns. Targets 4-6% fee-based CAGR, 3-5% dividend growth, and leverage declining to 3.5-3.8x post-Cedar. Includes fixed base + variable dividend component to absorb commodity swings"},
+      {name: "30% growth / 70% returns", desc: "Prioritize dividends, buybacks, and debt reduction. Limits growth capex but supports 6-8% dividend growth and rapid deleveraging to 3.5x. Best if you believe WCSB growth is slowing"},
+    ]
+  },
+  {
+    num: "Choice 3", title: "Pipeline Expansion Sanctioning",
+    question: "Should Pembina pre-build pipeline capacity ahead of LNG-driven demand, or wait for contracted commitments?",
+    driver: "Drives: Pipeline utilization, tolling revenue, long-term volume commitments",
+    options: [
+      {name: "Pre-build ahead of demand", desc: "Invest in new pipeline capacity before contracts are signed. Captures first-mover tolling premium if utilization exceeds 95%, but risks stranded assets and write-downs if volumes do not materialize"},
+      {name: "Build on contracted commitment", desc: "Only sanction new pipe when take-or-pay contracts are in hand. Protects utilization rates above 88% and fee-revenue predictability but may miss the window if egress becomes critically constrained"},
+      {name: "Acquire existing capacity", desc: "Buy operational pipeline assets from competitors. Faster than greenfield and de-risks execution, but depends on willing sellers and may pay a premium at cycle peaks"},
+    ]
+  },
+  {
+    num: "Choice 4", title: "Energy Transition Positioning",
+    question: "How much should Pembina invest in hydrogen transport, CCUS corridors, and low-carbon infrastructure today?",
+    driver: "Drives: Long-term asset utilization, stranded asset risk, corridor optionality",
+    options: [
+      {name: "Minimal (<$100M)", desc: "Keep capital focused on core fee-based returns. Correct if you believe WCSB production runway extends 15+ years, but creates zero transition capability if carbon hits $200+/tonne"},
+      {name: "Moderate ($300-500M)", desc: "Build CO2 pipeline corridors in Alberta leveraging existing rights-of-way and run hydrogen blending studies. Costs ~$50-100M/yr in near-term returns drag but creates optionality worth $1-2B under Accelerated Transition"},
+      {name: "Major pivot ($1B+)", desc: "Transform Pembina into a multi-commodity infrastructure company. Requires redirecting capital from core pipeline and processing business. Only justified if you believe carbon will exceed $200/tonne within 5 years"},
+    ]
+  },
+  {
+    num: "Choice 5", title: "M&A Posture",
+    question: "Should Pembina be a net acquirer of midstream assets, defend against being acquired, or stay opportunistic?",
+    driver: "Drives: Scale and competitive position, gas processing market share, leverage",
+    options: [
+      {name: "Aggressive acquirer", desc: "Target gas processing bolt-ons and WCSB midstream consolidation. Increases fee-based volumes and market share but requires leverage headroom (4.0x+) and risks overpaying at cycle peaks"},
+      {name: "Defensive posture", desc: "Focus on organic growth and poison-pill protections. Preserves current strategy but may miss the consolidation wave if infrastructure funds or pension capital targets Pembina's peers"},
+      {name: "Opportunistic / neutral", desc: "Maintain a target list for both growth acquisitions and distressed opportunities. Stay ready to act at cycle bottoms while keeping leverage at 3.5-3.8x for capacity"},
+    ]
+  },
+];
+
+function renderChoices() {
+  const grid = document.getElementById('choice-grid');
+  grid.innerHTML = choices.map((c, i) =>
+    `<div class="choice-card" onclick="openChoiceModal(${i})">
+      <div class="cc-num">${c.num}</div>
+      <h3>${c.title}</h3>
+      <div class="cc-q">${c.question}</div>
+      <div class="cc-driver">${c.driver.replace('Drives: ','')}</div>
+    </div>`
+  ).join('');
+}
+
+function openChoiceModal(idx) {
+  const c = choices[idx];
+  const el = document.getElementById('choice-modal-content');
+  el.innerHTML = `
+    <h3>${c.num}: ${c.title}</h3>
+    <div class="modal-q">${c.question}</div>
+    <div class="modal-driver">${c.driver}</div>
+    ${c.options.map((o,i) => `
+      <div class="option-card">
+        <h4>Option ${i+1}: ${o.name}</h4>
+        <p>${o.desc}</p>
+      </div>
+    `).join('')}
+  `;
+  openModal('choice-modal');
+}
+
+renderChoices();
+
+// ═══ SCENARIO SIGNALS DATA ═══
+const scenarioSignals = [
+  {
+    name: "Fortress Canada", color: "var(--green)",
+    desc: "This scenario is materializing when you see sustained WCSB production acceleration, LNG project FIDs being taken, and pipeline egress tightening. These signals directly boost Pembina's fee-based tolling volumes (the ~85% of revenue) and justify Cedar LNG expansion",
+    signals: [
+      {name: "WTI Price", val: "$70-90 stable", color: "var(--green)"},
+      {name: "LNG Canada Ph2 FID", val: "Taken in 2026", color: "var(--green)"},
+      {name: "WCSB Rig Count", val: "200+ and growing", color: "var(--green)"},
+      {name: "Federal Carbon Policy", val: "Industry-friendly reform", color: "var(--green)"},
+      {name: "Pembina Utilization", val: "95%+ (expansion needed)", color: "var(--green)"},
+      {name: "Polymarket WTI $120", val: "Below 20%", color: "var(--green)"},
+    ],
+    choiceTriggers: "When 3+ signals activate: formally reopen Choice 1 (Cedar expansion) and Choice 3 (pipeline sanctioning)"
+  },
+  {
+    name: "Steady Compounder", color: "var(--pembina-teal)",
+    desc: "The base case is holding when volumes grow at moderate pace, Cedar LNG stays on schedule, and no extreme policy shocks materialize. Fee-based tolling revenue compounds predictably, and the 85/15 revenue split remains stable",
+    signals: [
+      {name: "WTI Price", val: "$65-85 range", color: "var(--pembina-teal)"},
+      {name: "LNG Canada Ph2 FID", val: "Delayed to 2027", color: "var(--pembina-teal)"},
+      {name: "WCSB Rig Count", val: "170-190 (stable)", color: "var(--pembina-teal)"},
+      {name: "Federal Carbon Policy", val: "OBPS maintained ~$80", color: "var(--pembina-teal)"},
+      {name: "Pembina Utilization", val: "88-93%", color: "var(--pembina-teal)"},
+      {name: "Polymarket WTI $120", val: "20-40%", color: "var(--pembina-teal)"},
+    ],
+    choiceTriggers: "Base case: current strategic posture is appropriate. Monitor for drift toward Fortress or Transition signals"
+  },
+  {
+    name: "Commodity Whipsaw", color: "var(--amber)",
+    desc: "Geopolitical crisis creates price spikes that temporarily boost Pembina's ~15% marketing/NGL margin revenue but then trigger demand destruction that compresses volumes through the fee-based ~85%. Pipeline utilization swings wildly, making contracted commitments unpredictable",
+    signals: [
+      {name: "WTI Price", val: "$100+ sustained", color: "var(--amber)"},
+      {name: "LNG Canada Ph2 FID", val: "Expedited", color: "var(--amber)"},
+      {name: "WCSB Rig Count", val: "Volatile: 150-220", color: "var(--amber)"},
+      {name: "Federal Carbon Policy", val: "Paused for energy security", color: "var(--amber)"},
+      {name: "Pembina Utilization", val: "Volatile: 80-98%", color: "var(--amber)"},
+      {name: "Polymarket WTI $120", val: "Above 50%", color: "var(--amber)"},
+    ],
+    choiceTriggers: "When 3+ signals activate: formally reopen Choice 2 (capital allocation) and review leverage headroom across all choices"
+  },
+  {
+    name: "Accelerated Transition", color: "var(--red)",
+    desc: "Structural decline in WCSB production directly reduces pipeline throughput and gas processing volumes, the core of Pembina's fee-based revenue. Pipeline utilization drops below 80%, creating stranded asset risk on 10-15% of the asset base. Cedar LNG's contracted revenue becomes the primary value anchor",
+    signals: [
+      {name: "WTI Price", val: "Below $55 for 12mo+", color: "var(--red)"},
+      {name: "LNG Canada Ph2 FID", val: "Indefinitely deferred", color: "var(--red)"},
+      {name: "WCSB Rig Count", val: "Below 140", color: "var(--red)"},
+      {name: "Federal Carbon Policy", val: "$170+/tonne by 2030", color: "var(--red)"},
+      {name: "Pembina Utilization", val: "Below 80%", color: "var(--red)"},
+      {name: "Polymarket WTI $120", val: "Below 10%", color: "var(--red)"},
+    ],
+    choiceTriggers: "When 3+ signals activate: formally reopen Choice 4 (transition positioning) and Choice 5 (M&A posture)"
+  },
+];
+
+function openScenarioModal(idx) {
+  const s = scenarioSignals[idx];
+  const el = document.getElementById('scenario-modal-content');
+  el.innerHTML = `
+    <h3 style="color:${s.color}">${s.name}</h3>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.6">${s.desc}</p>
+    <div style="font-size:12px;font-weight:700;color:var(--pembina-dark);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Signals Indicating This Scenario Is Materializing</div>
+    ${s.signals.map(sig => `
+      <div class="signal-item">
+        <span class="si-name">${sig.name}</span>
+        <span class="si-val" style="color:${sig.color}">${sig.val}</span>
+      </div>
+    `).join('')}
+    <div style="margin-top:16px;padding:14px;background:var(--pembina-light);border-radius:8px;font-size:13px;color:var(--pembina-dark);font-weight:500">
+      ${s.choiceTriggers}
+    </div>
+    <div style="margin-top:20px;font-size:12px;font-weight:700;color:var(--pembina-dark);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Recommended Options Under This Scenario</div>
+    ${choiceMeta.map((cm,i) => {
+      const scenKey = ['fortress','steady','whipsaw','transition'][idx];
+      const rec = choiceRecs[scenKey][i];
+      return '<div style="padding:10px 14px;margin-bottom:6px;border-left:4px solid '+s.color+';background:var(--pembina-light);border-radius:0 6px 6px 0"><span style="font-size:11px;font-weight:700;color:var(--pembina-accent);letter-spacing:1px">'+cm.num+' | '+cm.title+'</span><div style="font-size:13px;font-weight:700;color:var(--pembina-teal);margin-top:3px">'+rec.rec+'</div><div style="font-size:11px;color:var(--text-light);margin-top:2px;line-height:1.4">'+rec.why+'</div></div>';
+    }).join('')}
+  `;
+  openModal('scenario-modal');
+}
+
+// ═══ SCENARIO BUILDER ENGINE ═══
+function gaussian(x,c,s){return Math.exp(-Math.pow(x-c,2)/(2*s*s));}
+
+const sigDefs=[
+  {id:'sig-wti',label:'WTI Crude Oil Price',horizon:'Average 2026-2028 strip',min:45,max:150,def:75,
+   fmt:v=>'$'+v+'/bbl',lo:'$45',hi:'$150'},
+  {id:'sig-lng',label:'LNG Canada Phase 2 FID Likelihood',horizon:'Decision expected 2026-2027',min:0,max:100,def:50,
+   fmt:v=>v<=15?'Indefinitely Deferred':v<=40?'Delayed to 2027+':v<=70?'Probable in 2026':v<=90?'Taken in 2026':'Expedited',lo:'Deferred',hi:'Expedited'},
+  {id:'sig-rig',label:'WCSB Rig Count (Active Rigs)',horizon:'Average 2026-2028',min:100,max:250,def:180,
+   fmt:v=>v+' rigs',lo:'100',hi:'250'},
+  {id:'sig-carbon',label:'Carbon Policy Severity',horizon:'Trajectory through 2029-2031',min:0,max:100,def:30,
+   fmt:v=>v<=15?'Industry-Friendly Reform':v<=40?'OBPS ~$80 (Status Quo)':v<=65?'Moderate Tightening':v<=85?'Aggressive ($170+/t)':'Punitive ($200+/t)',lo:'Friendly',hi:'Aggressive'},
+  {id:'sig-util',label:'Pembina Pipeline Utilization',horizon:'Terminal state 2029-2031',min:60,max:100,def:92,
+   fmt:v=>v+'%',lo:'60%',hi:'100%'},
+  {id:'sig-geo',label:'Geopolitical Tension / Oil Spike Risk',horizon:'Risk window: next 12-24 months',min:0,max:100,def:30,
+   fmt:v=>v<=15?'Stable / Low Risk':v<=40?'Moderate Tension':v<=65?'Elevated Risk':v<=85?'High / Conflict':'Crisis / Spike Imminent',lo:'Stable',hi:'Crisis'},
+];
+
+// ═══ WYHTB ═══
+const wyhtbData = {
+  'sig-wti': [
+    {threshold: 55, text: "You believe global oil demand has peaked or is declining, US shale is flooding the market, and OPEC discipline has collapsed. For Pembina: WCSB producer economics deteriorate, drilling slows, pipeline throughput volumes decline, and the ~85% fee-based revenue base contracts"},
+    {threshold: 70, text: "You believe the current supply/demand balance holds, with modest growth offset by US shale. Consistent with current strip pricing and East Daley's base case. For Pembina: steady pipeline volumes, stable gas processing throughput, and marketing margins in normal range"},
+    {threshold: 85, text: "You believe supply constraints are tightening from OPEC cuts, geopolitical disruption, or underinvestment. For Pembina: WCSB producer activity accelerates, pipeline utilization pushes toward 95%+, gas processing plants run near capacity, and marketing/NGL margins widen"},
+    {threshold: 110, text: "You believe geopolitical risk in the Middle East persists through 2029 and US shale growth remains capped by investor discipline. Polymarket prices WTI $120 at 65% odds for 2026. For Pembina: volumes surge but the ~15% marketing-exposed revenue becomes highly volatile"},
+    {threshold: 150, text: "You believe a sustained supply crisis persists for years. For Pembina: short-term revenue surge across both fee-based and marketing segments, but demand destruction by 2029-2031 reverses volumes and compresses multiples"},
+  ],
+  'sig-lng': [
+    {threshold: 15, text: "You believe global LNG oversupply kills the West Coast Canadian LNG case. Norton Rose Fulbright flags permitting risk. For Pembina: Cedar LNG becomes an isolated project, gas processing growth stalls, and the $400-500M/yr Cedar revenue target shrinks to $200-300M"},
+    {threshold: 40, text: "You believe LNG Canada Phase 2 faces material delays. For Pembina: Cedar LNG proceeds on schedule but the broader gas processing volume growth driven by multiple LNG projects does not materialize. Pipeline utilization grows slowly"},
+    {threshold: 70, text: "You believe the analyst consensus holds: Phase 2 FID probable in 2026. Norton Rose Fulbright base case. For Pembina: gas processing volumes grow 3-5%/yr, pipeline utilization tightens, and Cedar LNG revenue reaches full $400-500M/yr range"},
+    {threshold: 100, text: "You believe LNG buildout accelerates beyond base case with Ksi Lisims and additional FIDs. For Pembina: gas processing becomes the fastest-growing segment, pipeline egress becomes critically constrained, and tolling power increases materially"},
+  ],
+  'sig-rig': [
+    {threshold: 130, text: "You believe WCSB drilling contracts sharply, implying sub-$60 WTI or policy shock. For Pembina: pipeline throughput volumes decline, gas processing utilization drops, and fee-based revenue (the ~85% core) contracts year-over-year"},
+    {threshold: 170, text: "You believe drilling holds near current levels. East Daley mid-case for 2027-2029. For Pembina: pipeline volumes grow modestly at 2-4%, gas processing stable, and the current 92% utilization rate is maintained"},
+    {threshold: 200, text: "You believe producer activity accelerates materially on LNG demand and strong prices. For Pembina: pipeline utilization pushes above 95%, gas processing plants run at capacity, and new expansion sanctioning becomes urgent"},
+    {threshold: 250, text: "You believe the WCSB enters a sustained growth cycle not seen since 2014. For Pembina: every business driver is at maximum. Egress constrained, processing full, tolling premiums rising, and $2-3B in expansion capex is justified"},
+  ],
+  'sig-carbon': [
+    {threshold: 15, text: "You believe carbon pricing rolls back under economic pressure. For Pembina: OBPS compliance costs decrease by $30-50M/yr, producer economics improve, and WCSB volumes get a modest tailwind"},
+    {threshold: 40, text: "You believe OBPS at ~$80/tonne persists through 2029-2031. Status quo. For Pembina: no material change to operating cost structure. The current ~$80M/yr carbon compliance cost is manageable within the fee-based model"},
+    {threshold: 65, text: "You believe carbon tightens to $120-150/tonne by 2030. For Pembina: opex increases $50-100M/yr, marginal WCSB producers slow drilling (reducing volumes), and the economics of CCUS corridor investment improve"},
+    {threshold: 100, text: "You believe carbon hits $200+/tonne. For Pembina: operating costs rise $150-200M/yr, WCSB production peaks, pipeline utilization enters structural decline, and existing pipeline corridors become more valuable for CO2 transport than hydrocarbons"},
+  ],
+  'sig-util': [
+    {threshold: 72, text: "You believe WCSB production is in structural decline. For Pembina: fee-based tolling revenue (the core ~85%) contracts 3-8%/yr, gas processing volumes decline, and 10-15% of pipeline asset base faces stranding risk by 2031"},
+    {threshold: 85, text: "You believe utilization softens from competition (TMX, Enbridge expansion). For Pembina: tolling revenue is stable but growth stalls, new expansion capex is not justified, and competitive pressure on toll rates emerges"},
+    {threshold: 93, text: "You believe current rates hold. Pembina Q4 2025 operating reality and base case. For Pembina: steady fee-based revenue growth of 4-6%/yr, gas processing volumes track WCSB production, and the existing asset base is fully productive"},
+    {threshold: 100, text: "You believe capacity becomes critically constrained. For Pembina: tolling power increases significantly, rate re-contracting drives fee-revenue upside, new expansion capex generates 12-15% returns, and the business case for pre-building (Choice 3) strengthens"},
+  ],
+  'sig-geo': [
+    {threshold: 15, text: "You believe tensions de-escalate: Iran deal, Middle East stabilization. Oil settles $60-75. For Pembina: stable but unremarkable volumes, marketing margins narrow, and the urgency behind energy sovereignty policy fades"},
+    {threshold: 40, text: "You believe current tension persists but does not escalate. Polymarket-derived baseline. For Pembina: modest oil risk premium supports WCSB activity, marketing margins in normal range, and no significant disruption to business drivers"},
+    {threshold: 65, text: "You believe risk escalates: Hormuz tensions, expanded conflict. Oil above $100. For Pembina: WCSB activity surges (boosting volumes and utilization), marketing/NGL margins widen, but the ~15% commodity-exposed revenue becomes highly volatile"},
+    {threshold: 100, text: "You believe a major crisis is imminent: Hormuz closure, direct conflict. Oil spikes above $120. For Pembina: short-term revenue surge across all business drivers, but demand destruction within 12-24 months reverses volumes and tests the fee-based model"},
+  ],
+};
+
+function getWYHTB(sigId, value) {
+  const entries = wyhtbData[sigId];
+  if (!entries) return '';
+  let best = entries[0];
+  for (let i = 0; i < entries.length; i++) {
+    if (value >= entries[i].threshold) best = entries[i];
+  }
+  return best.text;
+}
+
+const scenFin={
+  fortress:{ebitda:5.25,dcf:6.25,mktcap:35,yld:3.8,price:78,util:97,feePct:87,mktgMargin:18,cedarRev:475,leverage:3.8},
+  steady:{ebitda:4.7,dcf:5.60,mktcap:30.5,yld:4.2,price:70,util:92,feePct:86,mktgMargin:12,cedarRev:400,leverage:3.5},
+  whipsaw:{ebitda:4.6,dcf:5.40,mktcap:26,yld:4.8,price:60,util:88,feePct:80,mktgMargin:22,cedarRev:380,leverage:3.7},
+  transition:{ebitda:3.5,dcf:3.85,mktcap:19,yld:6.2,price:44,util:74,feePct:90,mktgMargin:4,cedarRev:260,leverage:3.3},
+};
+
+const scenNamesMap={fortress:'Fortress Canada',steady:'Steady Compounder',whipsaw:'Commodity Whipsaw',transition:'Accelerated Transition'};
+
+const choiceMeta=[
+  {num:'Choice 1',title:'Cedar LNG Expansion'},
+  {num:'Choice 2',title:'Capital Allocation'},
+  {num:'Choice 3',title:'Pipeline Sanctioning'},
+  {num:'Choice 4',title:'Transition Positioning'},
+  {num:'Choice 5',title:'M&A Posture'},
+];
+
+const choiceRecs={
+  fortress:[
+    {rec:'Expand to 3.0 mtpa',why:'Full LNG buildout justifies doubling capacity; Cedar revenue reaches $475M+/yr'},
+    {rec:'70% growth / 30% returns',why:'Capture the largest midstream growth cycle in decades; leverage capacity supports 4.25x'},
+    {rec:'Pre-build ahead of demand',why:'Utilization at 97% means first-mover captures toll premium'},
+    {rec:'Minimal (<$100M)',why:'Core fee-based revenue thriving at 87% of total; no pivot needed'},
+    {rec:'Aggressive acquirer',why:'Consolidate WCSB dominance; gas processing bolt-ons at scale'},
+  ],
+  steady:[
+    {rec:'Hold at 1.5 mtpa',why:'Wait for LNG Canada Phase 2 FID signal; Cedar revenue at $400M/yr is solid'},
+    {rec:'50/50 balanced',why:'Disciplined compounding; fixed base + variable dividend; leverage to 3.5x post-Cedar'},
+    {rec:'Build on contracted commitment',why:'92% utilization means capacity exists; build only when contracts in hand'},
+    {rec:'Minimal (<$100M)',why:'Fee-based revenue at 86% is healthy; $80/t carbon is manageable'},
+    {rec:'Opportunistic / neutral',why:'Selective gas processing bolt-ons only; keep leverage at 3.5x for optionality'},
+  ],
+  whipsaw:[
+    {rec:'Hold at 1.5 mtpa',why:'Preserve capital; volatile marketing margins distort near-term economics'},
+    {rec:'50/50 balanced',why:'Variable dividend component absorbs commodity swings; maintain flexibility'},
+    {rec:'Build on contracted commitment',why:'Utilization swings 80-98%; only committed volumes are safe to build for'},
+    {rec:'Minimal (<$100M)',why:'Core business needs full attention; marketing margin volatility absorbs management capacity'},
+    {rec:'Opportunistic acquirer',why:'Position for distressed assets at cycle bottom; gas processing at discount'},
+  ],
+  transition:[
+    {rec:'Hold at 1.5 mtpa',why:'Capital preservation; gas volumes declining; Cedar contracted revenue ($260M) is the anchor'},
+    {rec:'30% growth / 70% returns',why:'Return capital before fee-based revenue (90% of shrinking total) declines further; deleverage to 3.3x'},
+    {rec:'Build on contract only',why:'74% utilization means excess capacity exists; no speculative investment'},
+    {rec:'Major pivot ($1B+)',why:'Pipeline corridors more valuable for CO2/H2 than hydrocarbons; build before stranding peaks'},
+    {rec:'Opportunistic / neutral',why:'Flexible posture; potential to acquire transition assets at discount'},
+  ],
+};
+
+function buildSignals(){
+  const el=document.getElementById('builder-signals');
+  el.innerHTML=sigDefs.map(s=>`
+    <div class="signal-ctrl">
+      <label>${s.label} <span style="font-weight:400;font-size:11px;color:var(--pembina-accent);margin-left:4px">${s.horizon}</span></label>
+      <div class="sig-row">
+        <input type="range" class="sig-range" id="${s.id}" min="${s.min}" max="${s.max}" value="${s.def}" oninput="updateBuilder()">
+        <span class="sig-val" id="${s.id}-val">${s.fmt(s.def)}</span>
+      </div>
+      <div class="sig-labels"><span>${s.lo}</span><span>${s.hi}</span></div>
+      <div class="wyhtb-box" id="${s.id}-wyhtb">
+        <div class="wyhtb-label">What You Have to Believe</div>
+        <span>${getWYHTB(s.id, s.def)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function resetSliders() {
+  sigDefs.forEach(s => {
+    document.getElementById(s.id).value = s.def;
+  });
+  updateBuilder();
+}
+
+// Fixed display order (matches scenario card introduction)
+const scenOrder=['fortress','steady','whipsaw','transition'];
+// Target baseline probabilities (must match scenario cards)
+const targetBase={fortress:0.30,steady:0.35,whipsaw:0.20,transition:0.15};
+
+function computeRaw(wti,lng,rig,carbon,util,geo){
+  return {
+    fortress:(gaussian(wti,82,16)+lng/100+gaussian(rig,220,28)+gaussian(carbon,8,18)+gaussian(util,97,5)+gaussian(geo,18,18))/6,
+    steady:(gaussian(wti,75,13)+gaussian(lng*100/100,55,25)+gaussian(rig,180,18)+gaussian(carbon,30,18)+gaussian(util,91,5)+gaussian(geo,25,18))/6,
+    whipsaw:(gaussian(wti,128,22)+gaussian(lng,65,30)+gaussian(rig,185,35)+gaussian(carbon,12,18)+gaussian(util,88,12)+geo/100)/6,
+    transition:(gaussian(wti,48,11)+gaussian(lng,8,14)+gaussian(rig,118,22)+carbon/100+gaussian(util,72,10)+gaussian(geo,8,14))/6,
+  };
+}
+
+// Compute calibration multipliers so defaults produce exact target baseline
+const baseRaw=computeRaw(75,50,180,30,92,30);
+const baseTotal=baseRaw.fortress+baseRaw.steady+baseRaw.whipsaw+baseRaw.transition;
+const calib={};
+scenOrder.forEach(k=>{ calib[k]=targetBase[k]*baseTotal/baseRaw[k]; });
+
+function scoreBuilder(){
+  const v={};
+  sigDefs.forEach(s=>v[s.id]=+document.getElementById(s.id).value);
+  const raw=computeRaw(v['sig-wti'],v['sig-lng'],v['sig-rig'],v['sig-carbon'],v['sig-util'],v['sig-geo']);
+  // Apply calibration
+  scenOrder.forEach(k=>{ raw[k]*=calib[k]; });
+  const total=raw.fortress+raw.steady+raw.whipsaw+raw.transition;
+  return{fortress:raw.fortress/total,steady:raw.steady/total,whipsaw:raw.whipsaw/total,transition:raw.transition/total};
+}
+
+function updateBuilder(){
+  sigDefs.forEach(s=>{
+    const val = +document.getElementById(s.id).value;
+    document.getElementById(s.id+'-val').textContent=s.fmt(val);
+    const wyhtbEl = document.getElementById(s.id+'-wyhtb');
+    if(wyhtbEl) {
+      wyhtbEl.innerHTML = '<div class="wyhtb-label">What You Have to Believe</div><span>' + getWYHTB(s.id, val) + '</span>';
+    }
+  });
+
+  const w=scoreBuilder();
+  const sorted=Object.entries(w).sort((a,b)=>b[1]-a[1]);
+  const dom=sorted[0][0], dom2=sorted[1][0];
+  const domPct=(sorted[0][1]*100).toFixed(0);
+  const colors={fortress:'var(--green)',steady:'var(--pembina-teal)',whipsaw:'var(--amber)',transition:'var(--red)'};
+
+  // Blend bar (fixed order)
+  const blendBarEl = document.getElementById('blend-bar-container');
+  if(blendBarEl) {
+    blendBarEl.innerHTML = '<div class="blend-summary">' + scenOrder.map(k=>{
+      const pct=(w[k]*100).toFixed(0);
+      return `<div class="blend-seg bs-${k}" style="width:${Math.max(+pct,4)}%">${pct>8?pct+'%':''}</div>`;
+    }).join('') + '</div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-top:4px">' + scenOrder.map(k=>{
+      return `<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${colors[k]};margin-right:4px"></span>${scenNamesMap[k]} ${(w[k]*100).toFixed(0)}%</span>`;
+    }).join('') + '</div>';
+  }
+
+  // Gauge (fixed order, star on dominant)
+  const gaugeEl=document.getElementById('scenario-gauge');
+  gaugeEl.innerHTML=scenOrder.map(k=>{
+    const pct=(w[k]*100).toFixed(0);
+    const isDom=k===dom;
+    return `<div class="gauge-row">
+      <span class="gauge-label" style="${isDom?'font-weight:700':''}">
+        ${isDom?'\u2605 ':''}${scenNamesMap[k]}</span>
+      <div class="gauge-track">
+        <div class="gauge-fill gf-${k}" style="width:${Math.max(+pct,6)}%">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Insight
+  const insightEl=document.getElementById('gauge-insight');
+  if(domPct>50){
+    insightEl.innerHTML='Your signals point strongly to <strong>'+scenNamesMap[dom]+'</strong> ('+domPct+'%). All five strategic choices below should be treated as actionable';
+  } else if(domPct>35){
+    insightEl.innerHTML='<strong>'+scenNamesMap[dom]+'</strong> leads at '+domPct+'%, but <strong>'+scenNamesMap[dom2]+'</strong> is close at '+(sorted[1][1]*100).toFixed(0)+'%. Watch for choices tagged Somewhat Confident or Uncertain below';
+  } else {
+    insightEl.innerHTML='Your signals produce a <strong>blended scenario</strong> with no single future dominating. Focus on Confident choices and defer Uncertain ones until signals clarify';
+  }
+
+  // Financials + business driver impact
+  const fin={};
+  ['ebitda','dcf','mktcap','yld','price','util','feePct','mktgMargin','cedarRev','leverage'].forEach(k=>{
+    fin[k]=0;
+    ['fortress','steady','whipsaw','transition'].forEach(sc=>fin[k]+=w[sc]*scenFin[sc][k]);
+  });
+  const finEl=document.getElementById('builder-fin');
+  const eD=((fin.ebitda/4.29-1)*100).toFixed(0);
+  const mD=((fin.mktcap/25.8-1)*100).toFixed(0);
+  finEl.innerHTML=`
+    <div class="builder-fin-item">
+      <div class="bf-val">$${fin.ebitda.toFixed(1)}B</div>
+      <div class="bf-label">Terminal EBITDA (2029-2031)</div>
+      <div class="bf-delta" style="color:${eD>=0?'var(--green)':'var(--red)'}">${eD>=0?'+':''}${eD}% vs 2025</div>
+    </div>
+    <div class="builder-fin-item">
+      <div class="bf-val">$${fin.dcf.toFixed(2)}</div>
+      <div class="bf-label">DCF / Share</div>
+    </div>
+    <div class="builder-fin-item">
+      <div class="bf-val">C$${fin.mktcap.toFixed(0)}B</div>
+      <div class="bf-label">Implied Market Cap</div>
+      <div class="bf-delta" style="color:${mD>=0?'var(--green)':'var(--red)'}">${mD>=0?'+':''}${mD}% vs current</div>
+    </div>
+    <div class="builder-fin-item">
+      <div class="bf-val">${fin.yld.toFixed(1)}%</div>
+      <div class="bf-label">Dividend Yield</div>
+      <div class="bf-delta" style="color:${fin.yld<6?'var(--green)':'var(--red)'}">${fin.yld<6?'Sustainable':'At Risk'}</div>
+    </div>`;
+
+  // Business driver detail
+  const driverEl=document.getElementById('driver-impact');
+  driverEl.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+      <div style="text-align:center;padding:10px;background:var(--pembina-light);border-radius:6px">
+        <div style="font-size:16px;font-weight:700;color:var(--pembina-teal)">${fin.util.toFixed(0)}%</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:2px">Pipeline utilization</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--pembina-light);border-radius:6px">
+        <div style="font-size:16px;font-weight:700;color:var(--pembina-teal)">${fin.feePct.toFixed(0)}%</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:2px">Fee-based revenue</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--pembina-light);border-radius:6px">
+        <div style="font-size:16px;font-weight:700;color:var(--pembina-teal)">${fin.mktgMargin.toFixed(0)}%</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:2px">Marketing margin</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--pembina-light);border-radius:6px">
+        <div style="font-size:16px;font-weight:700;color:var(--pembina-teal)">$${fin.cedarRev.toFixed(0)}M</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:2px">Cedar LNG rev/yr</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--pembina-light);border-radius:6px">
+        <div style="font-size:16px;font-weight:700;color:var(--pembina-teal)">${fin.leverage.toFixed(1)}x</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:2px">Implied leverage</div>
+      </div>
+    </div>`;
+
+  // Builder choices (Step 3)
+  const decsEl=document.getElementById('builder-decs');
+  const dom3=sorted.length>2?sorted[2][0]:dom2;
+  decsEl.innerHTML=choiceMeta.map((d,i)=>{
+    const rec=choiceRecs[dom][i];
+    const rec2=choiceRecs[dom2][i];
+    const rec3=choiceRecs[dom3][i];
+    const top2Agree=rec.rec===rec2.rec;
+    const top3Agree=top2Agree && rec.rec===rec3.rec;
+    let conf, label, icon;
+    if(top2Agree){ conf='confident'; label='CONFIDENT'; icon='\u2713'; }
+    else {
+      const spread=sorted[0][1]-sorted[1][1];
+      if(spread>0.15){ conf='somewhat-confident'; label='SOMEWHAT CONFIDENT'; icon='\u25C6'; }
+      else { conf='uncertain'; label='UNCERTAIN'; icon='\u26A0'; }
+    }
+    const labelColor=conf==='confident'?'var(--green)':conf==='somewhat-confident'?'var(--amber)':'var(--red)';
+    return `<div class="builder-dec ${conf}">
+      <div class="bd-num">${d.num} | ${d.title} <span class="conf-badge cb-${conf}">${label}</span></div>
+      <div class="bd-rec">${rec.rec}</div>
+      <div class="bd-why">${rec.why}${!top2Agree
+        ?' <div style="margin-top:4px;font-size:11px;color:var(--amber)">If '+scenNamesMap[dom2]+': '+rec2.rec+'</div>'
+        :''
+      }</div>
+    </div>`;
+  }).join('');
+
+}
+
+
+// ═══ INITIALIZE ═══
+buildSignals();
+updateBuilder();
+</script>
+</body>
+</html>
